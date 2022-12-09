@@ -1,16 +1,42 @@
 import React from "react"
-import memesData from "../memesData.js"
+// import memesData from "../memesData.js"
 
 export default function Meme() {
 
-    const [memeImage, setmemeImage] = React.useState("");
+    const [meme, setmeme] = React.useState({
+        toptext: "",
+        bottomtext: "",
+        randomImage: "https://i.imgflip.com/1g8my4.jpg"
+    })
+    const [allmemeimages, setallmemeimages] = React.useState([]);
+
+    React.useEffect(()=>{
+        async function getMemes(){
+            const res = await fetch("https://api.imgflip.com/get_memes")
+            const data = await res.json
+            setallmemeimages(data.data.memes)
+        }
+        getMemes()
+    }, [])
 
     function Meme(){
-        const memes = memesData.data.memes;
-        const random = Math.floor(Math.random() * memes.length);
-        const url = memes[random].url;
+        const random = Math.floor(Math.random() * allmemeimages.length);
+        const url = allmemeimages[random].url;
         // console.log(url);
-        setmemeImage(url);
+        setmeme(prevmeme => ({
+            ...prevmeme,
+            randomImage: url
+        }));  
+    }
+
+    function handleChange(event){
+        const {name, value} = event.target
+        setmeme(prevmeme =>{
+            return{
+                ...prevmeme,
+                [name]: value
+            }
+        })
     }
 
     return (
@@ -20,11 +46,17 @@ export default function Meme() {
                     type="text"
                     placeholder="Top text"
                     className="form--input"
+                    onChange={handleChange}
+                    name="toptext"
+                    value={meme.toptext}
                 />
                 <input 
                     type="text"
                     placeholder="Bottom text"
                     className="form--input"
+                    onChange={handleChange}
+                    name="bottomtext"
+                    value={meme.bottomtext}
                 />
                 <button 
                     className="form--button"
@@ -33,7 +65,11 @@ export default function Meme() {
                     Get a new meme image 🖼
                 </button>
             </div>
-            <img src={memeImage} alt="" className="meme--image"/>
+            <div className="memediv">
+                <img src={meme.randomImage} alt="" className="meme--image"/>
+                <h2 className="meme--text top">{meme.toptext}</h2>
+                <h2 className="meme--text bottom">{meme.bottomtext}</h2>
+            </div>
         </main>
     )
 }
